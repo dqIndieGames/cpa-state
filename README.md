@@ -6,6 +6,20 @@ A Windows localhost relay for Codex, with a native status window, per-account ro
 
 **Bring your own Codex/ChatGPT login and upstream access.** This project provides no accounts, credentials, model entitlement, or hosted service. It is an independent project, not an official OpenAI product. The application UI currently uses Chinese; this guide includes the relevant label translations.
 
+## Highlights: fixes for image and long-session retry loops
+
+**See why a request failed, and recover from known image and history compatibility problems directly in the relay.**
+
+| Problem | What CPA State adds |
+| --- | --- |
+| **422 after attaching images in BPS** | Carries user images through a compatible attachment envelope, preserving the image bytes. No historical tool is executed. |
+| **524 timeouts with a large image history** | On the client's next retry, progressively reduces older image detail and, if needed, replaces older images with placeholders while keeping recent images. The 524 path requires more than five images and at least 4 MiB of input. |
+| **400 from asynchronous tool history in BPS** | Adapts recognized `functions.exec` progress notifications that share a call ID, so valid later output is not rejected as a duplicate tool result. Also handles the client wire format without internal metadata. |
+| **400/422 explicitly reporting context overflow** | Uses the same bounded image-recovery ladder when applicable, based on the upstream reason rather than the status code alone. |
+| **Repeated retries with only a generic HTTP error** | Shows available upstream reasons and request IDs in conversation details for both ordinary and BPS modes. Keeps at most three error groups per conversation, merges repeats, redacts credential patterns, and marks recovery. |
+
+These fixes run in CPA State; **no Codex source changes or edits to original session JSONL files are required**. Image placeholders discard older visual detail from the outgoing request; the model is told to request originals when needed. Recovery runs on client retries and does not guarantee a fix for every 400/422/524. See [What the relay does](#what-the-relay-does) for the exact behavior.
+
 ## Quick start: Windows ZIP
 
 1. Install Codex and sign in using your own account (`codex login`). Keep your normal permissions and sandbox settings.
