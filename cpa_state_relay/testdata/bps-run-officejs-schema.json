@@ -1,0 +1,47 @@
+{
+  "source": "Live BPS response.created, controlled second/gpt-6-astra/medium probe, 2026-09-24 EDT",
+  "tool": {
+    "type": "function",
+    "description": "Run Office.js JavaScript inside an already-provided host wrapper. Excel uses async function runOfficeJsScript(ctx, Excel, console) { ... }; PowerPoint uses async function runOfficeJsScript(ctx, PowerPoint, console) { ... }. In PowerPoint scripts, use readPowerPointAttachmentPptxBase64(fileId) to stage an attached PPTX source for native template-slide import, then pass that value directly into insertSlidesFromBase64(..., { formatting: \"KeepSourceFormatting\" }) without inspecting, logging, or returning it. Use this when it is the fastest accurate path for host-native work that exceeds the direct primitive tools. Keep scripts scoped to the intended workbook, presentation, slides, shapes, or charts. Provide only the function body; top-level return is surfaced.",
+    "name": "run_officejs",
+    "output_schema": null,
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "summary": {
+          "type": "string",
+          "description": "Short label shown next to the tool icon. 4-8 words describing in active tense what is happening"
+        },
+        "extended_summary": {
+          "type": "string",
+          "description": "Extended summary of what is happening. 10-12 words describing in active tense what is happening. Use this to explain the script in more detail."
+        },
+        "code": {
+          "type": "string",
+          "description": "Function body only for the active host wrapper. Excel exposes (ctx, Excel, console); PowerPoint exposes (ctx, PowerPoint, console)."
+        },
+        "destructive": {
+          "type": "boolean",
+          "description": "Optional legacy metadata for UI summaries. You may omit it; if included, set true when the script edits the active Office document."
+        },
+        "references": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "description": "Optional user-visible references for the touched target. Excel may use A1 ranges such as ['Sheet1!A1:C10']; PowerPoint may omit this or use concise slide/object labels when useful."
+        }
+      },
+      "required": [
+        "summary",
+        "extended_summary",
+        "code",
+        "destructive",
+        "references"
+      ],
+      "additionalProperties": false
+    },
+    "strict": true
+  }
+}

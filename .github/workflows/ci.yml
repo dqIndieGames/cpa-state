@@ -1,0 +1,21 @@
+name: Windows checks
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: cpa_state_relay
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: cpa_state_relay/go.mod
+          cache-dependency-path: cpa_state_relay/go.sum
+      - run: go test ./... -count=1 -timeout 150s
+      - run: go vet ./...
+      - run: go build -trimpath -ldflags '-H windowsgui' -o cpa-state-relay.exe .

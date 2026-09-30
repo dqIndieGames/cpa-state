@@ -1,0 +1,16 @@
+* text=auto
+*.go text eol=lf
+*.md text eol=lf
+*.toml text eol=lf
+*.json text eol=lf
+*.ps1 text eol=lf
+*.cmd text eol=crlf
+*.png binary
+*.zip binary
+*.exe binary
+*.yml text eol=lf
+/LICENSE text eol=lf
+/.gitignore text eol=lf
+/.gitattributes text eol=lf
+go.mod text eol=lf
+go.sum text eol=lf

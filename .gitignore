@@ -1,0 +1,94 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+.chrome_debug_data/
+
+# Art Tools (内部工具)
+art-tools/node_modules
+art-tools/dist
+art-tools/png导出/
+
+# Build Archives (构建归档)
+构建包/
+
+# Husky internals
+.husky/_
+
+# Database
+server/.env
+server/.env.*
+!server/.env.example
+server/.adminjs/
+
+# [ADD][LocalDB] 本地数据库持久化目录
+server/.db-data/
+
+# 忽略数据库数据文件
+server/.db-data
+.db-data
+
+# NPM Configuration
+.npmrc
+
+# Public distribution allowlist: local state is private by default.
+/*
+!/.gitignore
+!/.gitattributes
+!/README.md
+!/README.zh-CN.md
+!/LICENSE
+!/THIRD_PARTY_NOTICES.md
+!/start.cmd
+!/cpa_state_relay/
+/cpa_state_relay/*
+!/cpa_state_relay/*.go
+/cpa_state_relay/zz_*
+/cpa_state_relay/*_dev_test.go
+!/cpa_state_relay/go.mod
+!/cpa_state_relay/go.sum
+!/cpa_state_relay/README.md
+!/cpa_state_relay/start.cmd
+!/cpa_state_relay/start.ps1
+!/cpa_state_relay/stop.ps1
+!/cpa_state_relay/restart.ps1
+!/cpa_state_relay/testdata/
+/cpa_state_relay/testdata/*
+!/cpa_state_relay/testdata/ticket_contract.json
+!/cpa_state_relay/testdata/codex_native_title.json
+!/cpa_state_relay/testdata/bps-run-officejs-schema.json
+!/cpa_state_relay/testdata/bps-excel-headers-20260929.json
+!/examples/
+/examples/*
+!/examples/codex-config.toml
+!/scripts/
+/scripts/*
+!/scripts/package.ps1
+!/third-party-licenses/
+!/third-party-licenses/**
+!/.github/
+/.github/*
+!/.github/workflows/
+/.github/workflows/*
+!/.github/workflows/ci.yml

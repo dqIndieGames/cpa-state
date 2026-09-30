@@ -1,0 +1,12 @@
+# Add this provider to your existing Codex config; do not replace login files.
+# Start CPA State first. Keep your existing model and reasoning settings.
+# 将此 provider 添加到现有 Codex 配置，勿覆盖登录文件；先启动 CPA。
+[features]
+enable_request_compression = false
+
+[model_providers.cpa_state_local]
+name = "CPA State Local"
+base_url = "http://127.0.0.1:17992/backend-api/codex"
+wire_api = "responses"
+requires_openai_auth = true
+supports_websockets = false
