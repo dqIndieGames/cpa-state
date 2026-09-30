@@ -50,6 +50,7 @@ func (r *relay) cachedTitle(key, value string) string {
 		}
 	}
 	if value != "" {
+		value = bpsPrefixedTitle(value, 120)
 		c.entries[key] = cachedBPSTitle{value, time.Now()}
 		for len(c.entries) > maxSessions {
 			oldest := ""
@@ -68,7 +69,8 @@ func (r *relay) cachedTitle(key, value string) string {
 			}
 		}
 	}
-	return boundedText(c.entries[key].Title, 120)
+	// Normalize old unprefixed cache entries on read without rewriting the cache.
+	return bpsPrefixedTitle(c.entries[key].Title, 120)
 }
 
 func usableLocalTitle(title string) bool {
@@ -206,7 +208,7 @@ func (r *relay) queueBPSTitle(req *http.Request, meta requestMetadata, key strin
 			s.TitleState, s.TitleError = "生成失败，使用现有标题或消息摘录", boundedText(err.Error(), 160)
 			return
 		}
-		s.Title, s.TitleSource, s.TitleState, s.TitleError = title, "BPS自动标题", "已生成", ""
+		s.Title, s.TitleSource, s.TitleState, s.TitleError = bpsPrefixedTitle(title, 120), "BPS自动标题", "已生成", ""
 	}()
 }
 

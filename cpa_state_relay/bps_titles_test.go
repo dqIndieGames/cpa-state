@@ -82,13 +82,13 @@ func TestBPSTitleProtocolAsyncCacheAndLocalPriority(t *testing.T) {
 	}
 	close(release)
 	row := awaitTitle(t, r, key)
-	if row.Title != want || row.TitleSource != "BPS自动标题" || calls.Load() != 1 {
+	if !strings.HasPrefix(row.Title, "[bps] ") || strings.TrimPrefix(row.Title, "[bps] ") != want || row.TitleSource != "BPS自动标题" || calls.Load() != 1 {
 		t.Fatal("generated title or dedup failed")
 	}
 	other := testRelay(t)
 	other.settingsFile = r.settingsFile
 	cacheKey := titleCacheKey(r.account.ID, row.ID)
-	if other.cachedTitle(cacheKey, "") != want || other.cachedTitle(titleCacheKey("account:other", row.ID), "") != "" {
+	if other.cachedTitle(cacheKey, "") != row.Title || other.cachedTitle(titleCacheKey("account:other", row.ID), "") != "" {
 		t.Fatal("persistent cache crossed account boundary")
 	}
 	index := filepath.Join(r.sessionHomes[0], "session_index.jsonl")
@@ -99,6 +99,31 @@ func TestBPSTitleProtocolAsyncCacheAndLocalPriority(t *testing.T) {
 	r.resolveSessionTitles()
 	if got := r.singleStatus().Sessions[0]; got.Title != "用户重新命名" || got.TitleSource != "Codex本地记录" {
 		t.Fatal("local rename did not take priority")
+	}
+}
+
+func TestBPSTitleLegacyCachePrefix(t *testing.T) {
+	r := testRelay(t)
+	key := titleCacheKey("account:second", "old-session")
+	upstreamTitle := "旧缓存标题"
+	raw, _ := json.Marshal(map[string]cachedBPSTitle{key: {Title: upstreamTitle, At: time.Now()}})
+	path := filepath.Join(filepath.Dir(r.settingsPath()), "bps-titles.json")
+	if err := os.WriteFile(path, raw, 0600); err != nil {
+		t.Fatal(err)
+	}
+	title := r.cachedTitle(key, "")
+	if !strings.HasPrefix(title, "[bps] ") || strings.TrimPrefix(title, "[bps] ") != upstreamTitle || strings.Count(strings.ToLower(title), "[bps]") != 1 {
+		t.Fatal("legacy cache title lost text or prefix")
+	}
+	after, err := os.ReadFile(path)
+	if err != nil || string(after) != string(raw) {
+		t.Fatal("reading a legacy cache rewrote the file")
+	}
+	for _, input := range []string{upstreamTitle, "[bps] " + upstreamTitle, "[BPS] [bps] " + upstreamTitle, strings.Repeat("界", 140)} {
+		got := r.cachedTitle(key, input)
+		if !strings.HasPrefix(got, "[bps] ") || strings.Count(strings.ToLower(got), "[bps]") != 1 || len([]rune(got)) > 120 || r.cachedTitle(key, "") != got {
+			t.Fatal("cache prefix, length or persistence invariant failed")
+		}
 	}
 }
 func TestBPSTitleFailuresAndExistingNames(t *testing.T) {

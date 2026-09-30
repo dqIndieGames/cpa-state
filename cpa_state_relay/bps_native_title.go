@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-// Captured from the actual local3 TUI's ephemeral system title request.
+// Captured from the local3 TUI's temporary title request.
 // Match the contract AND system feature metadata, never just a user's prose.
 const codexTitleInstructions = "Generate a concise, single-line task title of at most 36 characters and under five words where possible. Start with an imperative verb. Capitalize only the first word unless the user's language, proper nouns, acronyms, or code terms require otherwise. Preserve ticket references exactly. Write in the user's language. Do not use quotes, markdown, or trailing punctuation. Do not answer the request."
 
@@ -31,7 +31,11 @@ func nativeBPSTitlePrompt(raw []byte) (string, bool) {
 	}
 	client, _ := src["client_metadata"].(map[string]any)
 	var metadata map[string]any
-	if json.Unmarshal([]byte(str(client, "x-codex-turn-metadata")), &metadata) != nil || metadata["thread_source"] != "system" {
+	if json.Unmarshal([]byte(str(client, "x-codex-turn-metadata")), &metadata) != nil {
+		return "", false
+	}
+	// Older local3 clients label title workers system; 0.159.1 uses thread_title.
+	if source := metadata["thread_source"]; source != "system" && source != "thread_title" {
 		return "", false
 	}
 	// This local3 build still includes additional_tools in its system worker.
@@ -44,6 +48,10 @@ func nativeBPSTitlePrompt(raw []byte) (string, bool) {
 }
 
 func bpsCodexTitle(title string) string {
+	return bpsPrefixedTitle(title, 36)
+}
+
+func bpsPrefixedTitle(title string, limit int) string {
 	title = strings.Join(strings.Fields(title), " ")
 	for strings.HasPrefix(strings.ToLower(title), "[bps]") {
 		title = strings.TrimSpace(title[5:])
@@ -51,7 +59,7 @@ func bpsCodexTitle(title string) string {
 	if title == "" {
 		return ""
 	}
-	return "[bps] " + boundedText(title, 30)
+	return "[bps] " + boundedText(title, limit-len("[bps] "))
 }
 
 // Answer the real TUI title worker. Codex owns naming, manual-name precedence,

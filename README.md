@@ -17,6 +17,7 @@ A Windows localhost relay for Codex, with a native status window, per-account ro
 | **400 from asynchronous tool history in BPS** | Adapts recognized `functions.exec` progress notifications that share a call ID, so valid later output is not rejected as a duplicate tool result. Also handles the client wire format without internal metadata. |
 | **400/422 explicitly reporting context overflow** | Uses the same bounded image-recovery ladder when applicable, based on the upstream reason rather than the status code alone. |
 | **Repeated retries with only a generic HTTP error** | Shows available upstream reasons and request IDs in conversation details for both ordinary and BPS modes. Keeps at most three error groups per conversation, merges repeats, redacts credential patterns, and marks recovery. |
+| **Automatic titles lose `[bps]` after a Codex update** | Recognizes both legacy `system` and current `thread_title` title requests. Titles returned to Codex and CPA automatic titles keep one prefix; legacy cached titles are normalized on read, while manually chosen names take priority. |
 
 These fixes run in CPA State; **no Codex source changes or edits to original session JSONL files are required**. Image placeholders discard older visual detail from the outgoing request; the model is told to request originals when needed. Recovery runs on client retries and does not guarantee a fix for every 400/422/524. See [What the relay does](#what-the-relay-does) for the exact behavior.
 
@@ -63,7 +64,7 @@ Right-click the tray icon to exit (`退出`). The full-restart action requires *
 ## Requirements and compatibility
 
 - Windows 10/11 x64; Windows PowerShell 5.1 or PowerShell 7 for startup. PowerShell 7 is required for the optional full-restart helper.
-- A Responses-capable Codex client and your own valid upstream access. Development used a customized Codex 0.155.1 local3 client; account switching, automatic title requests, and some tool formats can differ in other clients.
+- A Responses-capable Codex client and your own valid upstream access. Development used customized Codex 0.155.1 local3 and 0.159.1 local3 clients; account switching, automatic title requests, and some tool formats can differ in other clients.
 - BPS is experimental and may be unavailable to your account or change without notice. Start with **BPS OFF**. The relay cannot grant permissions or guarantee model availability. Choose a model your account supports.
 - BPS preserves `low/medium/high/xhigh`; `max/ultra` map to `xhigh` and the UI reports the actual level. BPS rejects priority/flex service tiers; default/auto omit the unsupported field.
 - Ordinary networking follows OS routing, including a configured VPN/TUN. `HTTP_PROXY`, `HTTPS_PROXY`, and `ALL_PROXY` are not used by its transport. No personal proxy or VPN profile is included.
@@ -75,7 +76,7 @@ CPA reads `%CODEX_HOME%\auth.json` and `accounts\*\auth.json` when present (defa
 
 Local data is under `%LOCALAPPDATA%\cpa-state-relay`: settings, per-account settings, bounded error snapshots, title cache, network diagnostics, and restart backups. The window/status API can show account names, emails and conversation titles; do not publish that directory or unreviewed screenshots. Runtime error snapshots are bounded to 1 MiB and 500 conversations per account. The relay does not persist complete HTTP request bodies or images; Codex manages its own transcripts.
 
-BPS automatic title generation may send up to 4096 characters of a user message to the same account's BPS title service. Titles are cached locally. Upstream requests, including ordinary model prompts, necessarily leave your machine.
+BPS automatic title generation may send up to 4096 characters of a user message to the same account's BPS title service. Automatic titles returned to Codex are limited to 36 characters; CPA automatic titles and cached titles are limited to 120 characters. Both limits include exactly one `[bps]` prefix. Manually chosen names receive no added prefix. Legacy cached titles are normalized on read; existing Codex conversations are not renamed in bulk. Upstream requests, including ordinary model prompts, necessarily leave your machine.
 
 The HTTP server binds to loopback only. It is a **local desktop tool**, not an authenticated multi-user/public proxy. Do not expose its port through a tunnel or public reverse proxy. `/api/status` is intended for local diagnostics.
 

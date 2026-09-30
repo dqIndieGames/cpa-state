@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-const buildVersion = "multi-account-20260929-async-image-recovery"
+const buildVersion = "multi-account-20260930-bps-title-compat"
 
 type accountInfo struct{ ID, Name, Email string }
 type authDocument struct {

@@ -28,7 +28,10 @@ func TestNativeBPSTitleRecognitionBoundary(t *testing.T) {
 		t.Fatal("real TUI title contract was not recognized")
 	}
 	mutations := map[string]func(map[string]any){
-		"ordinary user request":      func(v map[string]any) { delete(v, "client_metadata") },
+		"ordinary user request": func(v map[string]any) { delete(v, "client_metadata") },
+		"other feature": func(v map[string]any) {
+			v["client_metadata"].(map[string]any)["x-codex-turn-metadata"] = `{"thread_source":"automation"}`
+		},
 		"ordinary structured output": func(v map[string]any) { v["input"] = "Summarize a book" },
 		"tools":                      func(v map[string]any) { v["tools"] = []any{map[string]any{"type": "function", "name": "shell"}} },
 		"nonstream":                  func(v map[string]any) { v["stream"] = false },
@@ -46,6 +49,20 @@ func TestNativeBPSTitleRecognitionBoundary(t *testing.T) {
 				t.Fatal("unrelated contract intercepted")
 			}
 		})
+	}
+}
+
+// Ground truth: Codex 0.159.1 local3 tui/src/app/thread_title.rs starts
+// ThreadSource::Feature("thread_title"); protocol/src/protocol.rs serializes
+// Feature as its label. Keep the captured legacy fixture as a separate contract.
+func TestNativeBPSTitleCurrentFeatureSource(t *testing.T) {
+	var v map[string]any
+	_ = json.Unmarshal(nativeTitleFixture(t), &v)
+	v["client_metadata"].(map[string]any)["x-codex-turn-metadata"] = `{"thread_source":"thread_title"}`
+	raw, _ := json.Marshal(v)
+	prompt, ok := nativeBPSTitlePrompt(raw)
+	if !ok || !strings.HasPrefix(prompt, "Read challenge.txt") {
+		t.Fatal("current Codex title request was not recognized")
 	}
 }
 
